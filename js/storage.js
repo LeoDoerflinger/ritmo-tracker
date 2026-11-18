@@ -1,4 +1,4 @@
-const STORAGE_KEY = 'ritmo_tracker_state_v2';
+const STORAGE_KEY = 'ritmo_tracker_state_v3';
 const IDB_NAME = 'RitmoTrackerDB';
 const IDB_STORE = 'app_state';
 
@@ -59,15 +59,23 @@ function buildSeedLogs({ todayCount, last7DaysCounts, prevWeekTotal, olderMonthT
 
 function createInitialDemoState() {
   return {
-    version: 2,
+    version: 3,
     userName: 'Sofía',
+    onboardingCompleted: false,
+    tourCompleted: false,
     bannerDismissed: false,
     coachSuggestionIndex: 0,
+    profile: {
+      name: 'Sofía',
+      age: 24,
+      gender: 'femenino',
+      focus: 'bienestar',
+      preferredTime: 'manana'
+    },
     preferences: {
       theme: 'sakura',
       font: 'soft',
       layout: 'grid',
-      shape: 'squircle',
       sound: true,
       coachTone: 'sweet'
     },
@@ -83,7 +91,7 @@ function createInitialDemoState() {
           enabled: true,
           time: '11:30',
           days: [1, 2, 3, 4, 5, 6, 0],
-          note: 'Tomá un vaso de agua fresca para mantenerte hidratada'
+          note: 'Tomate un momento para sumar un vaso de agua'
         },
         logs: buildSeedLogs({
           todayCount: 2,
@@ -123,7 +131,7 @@ function createInitialDemoState() {
           enabled: false,
           time: '21:30',
           days: [1, 2, 3, 4, 5, 6, 0],
-          note: 'Leé 5 a 20 minutos antes de dormir'
+          note: 'Leé unas páginas antes de dormir'
         },
         logs: buildSeedLogs({
           todayCount: 0,
@@ -179,10 +187,8 @@ async function saveToIndexedDB(state) {
     const db = await openIndexedDB();
     if (!db) return;
     const tx = db.transaction(IDB_STORE, 'readwrite');
-    tx.objectStore(IDB_STORE).put(state, 'current');
-  } catch (_) {
-    // IndexedDB is an asynchronous backup layer; localStorage remains primary.
-  }
+    tx.objectStore(IDB_STORE).put(state, 'current_v3');
+  } catch (_) {}
 }
 
 async function loadFromIndexedDB() {
@@ -191,7 +197,7 @@ async function loadFromIndexedDB() {
     if (!db) return null;
     return await new Promise((resolve) => {
       const tx = db.transaction(IDB_STORE, 'readonly');
-      const req = tx.objectStore(IDB_STORE).get('current');
+      const req = tx.objectStore(IDB_STORE).get('current_v3');
       req.onsuccess = () => resolve(req.result || null);
       req.onerror = () => resolve(null);
     });
@@ -210,9 +216,7 @@ const StorageEngine = {
           return this.normalizeState(parsed);
         }
       }
-    } catch (_) {
-      // Fallback to demo state if corrupted
-    }
+    } catch (_) {}
     const seed = createInitialDemoState();
     this.saveState(seed);
     return seed;
@@ -232,11 +236,21 @@ const StorageEngine = {
 
   normalizeState(state) {
     const defaults = createInitialDemoState();
+    const profile = {
+      ...defaults.profile,
+      ...(state.profile || {})
+    };
+    if (state.userName && !state.profile) {
+      profile.name = state.userName;
+    }
     return {
-      version: 2,
-      userName: state.userName || defaults.userName,
+      version: 3,
+      userName: profile.name || state.userName || defaults.userName,
+      onboardingCompleted: Boolean(state.onboardingCompleted),
+      tourCompleted: Boolean(state.tourCompleted),
       bannerDismissed: Boolean(state.bannerDismissed),
       coachSuggestionIndex: Number(state.coachSuggestionIndex || 0),
+      profile,
       preferences: {
         ...defaults.preferences,
         ...(state.preferences || {})
@@ -265,25 +279,20 @@ const StorageEngine = {
   saveState(state) {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    } catch (_) {
-      // Storage quota fallback
-    }
+    } catch (_) {}
     saveToIndexedDB(state);
   },
 
-  resetToDemoState() {
+  resetToDemoState(keepProfile = true, currentState = null) {
     const fresh = createInitialDemoState();
+    if (keepProfile && currentState && currentState.profile) {
+      fresh.profile = { ...currentState.profile };
+      fresh.userName = currentState.userName;
+      fresh.onboardingCompleted = true;
+      fresh.tourCompleted = true;
+    }
     this.saveState(fresh);
     return fresh;
-  },
-
-  clearAllHabits(currentState) {
-    const cleared = {
-      ...currentState,
-      habits: []
-    };
-    this.saveState(cleared);
-    return cleared;
   },
 
   getHabitStats(habit) {
@@ -488,7 +497,7 @@ const StorageEngine = {
     const parsed = JSON.parse(rawString);
     const candidate = parsed && parsed.data ? parsed.data : parsed;
     if (!candidate || !Array.isArray(candidate.habits)) {
-      throw new Error('El archivo seleccionado no contiene un formato válido de hábitos.');
+      throw new Error('El archivo seleccionado no contiene un formato válido.');
     }
     const normalized = this.normalizeState(candidate);
     this.saveState(normalized);

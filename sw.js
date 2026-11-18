@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ritmo-pwa-v2';
+const CACHE_NAME = 'ritmo-pwa-v3';
 const OFFLINE_ASSETS = [
   './',
   './index.html',

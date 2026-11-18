@@ -11,15 +11,46 @@ const CARD_TONES = [
   { id: 'coral', label: 'Coral Peonía', hex: '#F7D7CE' }
 ];
 
+const TOUR_STEPS = [
+  {
+    selector: '#habits-grid',
+    title: 'Sumá +1 con un toque',
+    desc: 'Tocá cualquier tarjeta para registrar tu progreso diario al instante. La barra inferior mostrará cuánto te falta para tu meta.'
+  },
+  {
+    selector: '.habit-stats-btn',
+    title: 'Opciones y estadísticas (?)',
+    desc: 'Tocá el botón "?" en la esquina de cada tarjeta para ver su historial, corregir un toque (-1), programar recordatorios o editarla.'
+  },
+  {
+    selector: '#open-coach-btn',
+    title: 'Sugerencias y Resumen IA',
+    desc: 'Consultá tu informe dinámico personalizado según tus datos, horarios más activos y el enfoque que elegiste.'
+  },
+  {
+    selector: '#open-create-modal-btn',
+    title: 'Creá nuevos hábitos (+)',
+    desc: 'Usá el botón "+" para agregar hábitos eligiendo su ícono, color pastel, meta diaria y alertas.'
+  },
+  {
+    selector: '#header-actions-group',
+    title: 'Ajustes e instalación móvil',
+    desc: 'Desde arriba a la derecha podés cambiar los colores y la fuente de toda la app, o instalarla en la pantalla de tu celular.'
+  }
+];
+
 let appState = window.StorageEngine.loadState();
 let activeTab = 'habits';
 let editingHabitId = null;
 let selectedHabitIcon = '💧';
 let selectedHabitTone = 'sky';
 let selectedReminderDays = [1, 2, 3, 4, 5, 6, 0];
+let selectedProfileGender = 'femenino';
+let selectedProfileFocus = 'bienestar';
 let currentStatsHabitId = null;
 let deferredPwaPrompt = null;
 let toastTimer = null;
+let currentTourIndex = -1;
 
 document.addEventListener('DOMContentLoaded', async () => {
   const recovered = await window.StorageEngine.syncFromIndexedDBIfNeeded();
@@ -42,6 +73,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   registerServiceWorker();
   handleHashRoute();
+
+  if (!appState.onboardingCompleted) {
+    openOnboardingModal();
+  } else if (!appState.tourCompleted) {
+    setTimeout(() => startGuidedTour(), 350);
+  }
 });
 
 function registerServiceWorker() {
@@ -57,10 +94,6 @@ function registerServiceWorker() {
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPwaPrompt = e;
-    const installBtn = document.getElementById('pwa-direct-install-btn');
-    if (installBtn) {
-      installBtn.hidden = false;
-    }
   });
 }
 
@@ -76,7 +109,6 @@ function applyInterfacePreferences() {
   document.documentElement.setAttribute('data-theme', prefs.theme || 'sakura');
   document.documentElement.setAttribute('data-font', prefs.font || 'soft');
   document.documentElement.setAttribute('data-layout', prefs.layout || 'grid');
-  document.documentElement.setAttribute('data-shape', prefs.shape || 'squircle');
 
   const themeColors = {
     sakura: '#FAF6F0',
@@ -107,7 +139,9 @@ function saveAndRender() {
 function renderAll() {
   const greetingNameEl = document.getElementById('greeting-name-text');
   if (greetingNameEl) {
-    greetingNameEl.textContent = `Hola, ${appState.userName || 'Sofía'}`;
+    const displayName =
+      (appState.profile && appState.profile.name) || appState.userName || 'Sofía';
+    greetingNameEl.textContent = `Hola, ${displayName}`;
   }
 
   const globalStats = window.StorageEngine.getGlobalStats(appState);
@@ -126,7 +160,6 @@ function renderAll() {
 
   renderCoachBanner();
   renderHabitsGrid(globalStats);
-  renderWidgetView(globalStats);
   renderGlobalStatsView(globalStats);
   syncCustomizationControls();
 }
@@ -185,16 +218,20 @@ function renderHabitsGrid(globalStats) {
     card.innerHTML = `
       <div class="habit-card-top">
         <div class="habit-emoji-box" aria-hidden="true">${escapeHtml(habit.icon)}</div>
-        <button type="button" class="habit-stats-btn" data-stats-id="${escapeHtml(habit.id)}" aria-label="Ver estadísticas y ajustes de ${escapeHtml(habit.name)}" title="Estadísticas y recordatorios">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <line x1="18" y1="20" x2="18" y2="10"></line>
-            <line x1="12" y1="20" x2="12" y2="4"></line>
-            <line x1="6" y1="20" x2="6" y2="14"></line>
-          </svg>
+        <button type="button" class="habit-stats-btn" data-stats-id="${escapeHtml(
+          habit.id
+        )}" aria-label="Ver opciones y estadísticas de ${escapeHtml(
+          habit.name
+        )}" title="Opciones y estadísticas">
+          ?
         </button>
       </div>
 
-      <button type="button" class="habit-click-area" data-click-id="${escapeHtml(habit.id)}" aria-label="Sumar 1 a ${escapeHtml(habit.name)}. Progreso actual ${stats.todayCount} de ${stats.goal} hoy">
+      <button type="button" class="habit-click-area" data-click-id="${escapeHtml(
+        habit.id
+      )}" aria-label="Sumar 1 a ${escapeHtml(habit.name)}. Progreso actual ${
+        stats.todayCount
+      } de ${stats.goal} hoy">
         <h2 class="habit-title">${escapeHtml(habit.name)}</h2>
         <div class="habit-meta-row">
           <span class="habit-count-pill tabular-nums">
@@ -229,58 +266,6 @@ function renderHabitsGrid(globalStats) {
     });
 
     grid.appendChild(card);
-  });
-}
-
-function renderWidgetView(globalStats) {
-  const grid2x2 = document.getElementById('widget-2x2-container');
-  const strip = document.getElementById('widget-scroll-container');
-  if (!grid2x2 || !strip) return;
-
-  grid2x2.innerHTML = '';
-  strip.innerHTML = '';
-
-  if (globalStats.habitsWithStats.length === 0) {
-    grid2x2.innerHTML = `<p style="grid-column: span 2; font-size: 0.85rem; color: var(--text-muted); text-align: center; padding: 1rem;">Agregá hábitos con el botón + para verlos en el widget.</p>`;
-    return;
-  }
-
-  globalStats.habitsWithStats.slice(0, 4).forEach(({ habit, stats }) => {
-    const tile = document.createElement('button');
-    tile.type = 'button';
-    tile.className = `widget-mini-tile pastel-${habit.tone || 'sky'}`;
-    tile.setAttribute('aria-label', `Widget: sumar 1 a ${habit.name}`);
-    tile.innerHTML = `
-      <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
-        <span style="font-size:1.35rem;" aria-hidden="true">${escapeHtml(habit.icon)}</span>
-        <span class="tabular-nums" style="font-size:0.74rem; font-weight:800; background:var(--bg-surface); padding:0.15rem 0.5rem; border-radius:999px; color:var(--text-primary);">${stats.todayCount}/${stats.goal}</span>
-      </div>
-      <div style="margin-top:0.5rem;">
-        <div style="font-weight:700; font-size:0.84rem; color:var(--text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(habit.name)}</div>
-        <div style="font-size:0.7rem; color:var(--text-secondary); margin-top:0.1rem;">Tocá para +1</div>
-      </div>
-    `;
-    tile.addEventListener('click', () => incrementHabit(habit.id));
-    grid2x2.appendChild(tile);
-  });
-
-  globalStats.habitsWithStats.forEach(({ habit, stats }) => {
-    const hCard = document.createElement('div');
-    hCard.className = `widget-horizontal-card pastel-${habit.tone || 'sky'}`;
-    hCard.innerHTML = `
-      <div style="display:flex; justify-content:space-between; align-items:center;">
-        <span style="width:36px; height:36px; border-radius:12px; background:var(--bg-surface); display:flex; align-items:center; justify-content:center; font-size:1.15rem;" aria-hidden="true">${escapeHtml(habit.icon)}</span>
-        <span class="tabular-nums" style="font-size:0.74rem; font-weight:800; background:var(--bg-surface); padding:0.2rem 0.55rem; border-radius:8px; color:var(--text-primary);">${stats.todayCount}/${stats.goal}</span>
-      </div>
-      <div>
-        <div style="font-weight:700; font-size:0.85rem; color:var(--text-primary); margin-bottom:0.45rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(habit.name)}</div>
-        <button type="button" class="primary-cta-btn" style="min-height:44px; font-size:0.78rem; border-radius:12px;" data-widget-add="${escapeHtml(habit.id)}">+ Sumar 1</button>
-      </div>
-    `;
-    hCard.querySelector('[data-widget-add]').addEventListener('click', () => {
-      incrementHabit(habit.id);
-    });
-    strip.appendChild(hCard);
   });
 }
 
@@ -352,17 +337,17 @@ function renderGlobalStatsView(globalStats) {
     timeDistEl.innerHTML = `
       <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:0.5rem; text-align:center;">
         <div style="background:var(--bg-subtle); padding:0.65rem; border-radius:14px;">
-          <div style="font-size:0.72rem; font-weight:700; color:var(--text-secondary);">☀️ Mañana</div>
+          <div style="font-size:0.72rem; font-weight:700; color:var(--text-secondary);">Mañana</div>
           <div class="tabular-nums" style="font-size:1.05rem; font-weight:800; margin-top:0.15rem;">${mPct}%</div>
           <div class="tabular-nums" style="font-size:0.68rem; color:var(--text-muted);">${td.morning} reg.</div>
         </div>
         <div style="background:var(--bg-subtle); padding:0.65rem; border-radius:14px;">
-          <div style="font-size:0.72rem; font-weight:700; color:var(--text-secondary);">🌤️ Tarde</div>
+          <div style="font-size:0.72rem; font-weight:700; color:var(--text-secondary);">Tarde</div>
           <div class="tabular-nums" style="font-size:1.05rem; font-weight:800; margin-top:0.15rem;">${aPct}%</div>
           <div class="tabular-nums" style="font-size:0.68rem; color:var(--text-muted);">${td.afternoon} reg.</div>
         </div>
         <div style="background:var(--bg-subtle); padding:0.65rem; border-radius:14px;">
-          <div style="font-size:0.72rem; font-weight:700; color:var(--text-secondary);">🌙 Noche</div>
+          <div style="font-size:0.72rem; font-weight:700; color:var(--text-secondary);">Noche</div>
           <div class="tabular-nums" style="font-size:1.05rem; font-weight:800; margin-top:0.15rem;">${nPct}%</div>
           <div class="tabular-nums" style="font-size:0.68rem; color:var(--text-muted);">${td.night} reg.</div>
         </div>
@@ -405,9 +390,10 @@ function incrementHabit(habitId) {
     openHabitStatsModal(habitId);
   }
 
-  const msg = newStats.completedToday && !prevStats.completedToday
-    ? `¡Meta de hoy alcanzada en ${habit.icon} ${habit.name}! (${newStats.todayCount}/${newStats.goal})`
-    : `Sumaste +1 en ${habit.icon} ${habit.name} (${newStats.todayCount}/${newStats.goal} hoy)`;
+  const msg =
+    newStats.completedToday && !prevStats.completedToday
+      ? `Meta de hoy alcanzada en ${habit.icon} ${habit.name} (${newStats.todayCount}/${newStats.goal})`
+      : `Sumaste +1 en ${habit.icon} ${habit.name} (${newStats.todayCount}/${newStats.goal} hoy)`;
 
   showToast(msg, habitId, 'Deshacer');
 }
@@ -443,15 +429,18 @@ function showToast(message, habitId = null, actionType = 'Deshacer') {
   textSpan.textContent = message;
   box.appendChild(textSpan);
 
-  if (habitId) {
+  if (habitId || actionType === 'Mostrar') {
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'toast-undo-btn';
     btn.textContent = actionType;
     btn.addEventListener('click', () => {
-      if (actionType === 'Deshacer') {
+      if (actionType === 'Mostrar') {
+        appState.bannerDismissed = false;
+        saveAndRender();
+      } else if (actionType === 'Deshacer') {
         decrementHabitToday(habitId);
-      } else {
+      } else if (habitId) {
         incrementHabit(habitId);
       }
       container.innerHTML = '';
@@ -462,7 +451,7 @@ function showToast(message, habitId = null, actionType = 'Deshacer') {
   container.appendChild(box);
   toastTimer = setTimeout(() => {
     container.innerHTML = '';
-  }, 4000);
+  }, 4200);
 }
 
 function switchTab(tabName) {
@@ -474,6 +463,87 @@ function switchTab(tabName) {
     if (btn) btn.setAttribute('aria-selected', t === tabName ? 'true' : 'false');
     if (view) view.hidden = t !== tabName;
   });
+}
+
+function openOnboardingModal() {
+  const profile = appState.profile || {};
+  document.getElementById('profile-name-input').value =
+    profile.name || appState.userName || 'Sofía';
+  document.getElementById('profile-age-input').value = profile.age || 24;
+  selectedProfileGender = profile.gender || 'femenino';
+  selectedProfileFocus = profile.focus || 'bienestar';
+
+  document.querySelectorAll('[data-profile-gender]').forEach((btn) => {
+    btn.setAttribute(
+      'aria-pressed',
+      btn.dataset.profileGender === selectedProfileGender ? 'true' : 'false'
+    );
+  });
+
+  document.querySelectorAll('[data-profile-focus]').forEach((btn) => {
+    btn.setAttribute(
+      'aria-pressed',
+      btn.dataset.profileFocus === selectedProfileFocus ? 'true' : 'false'
+    );
+  });
+
+  document.getElementById('onboarding-error').hidden = true;
+  document.getElementById('onboarding-modal').hidden = false;
+}
+
+function startGuidedTour() {
+  switchTab('habits');
+  document.querySelectorAll('.modal-backdrop').forEach((m) => {
+    m.hidden = true;
+  });
+  currentTourIndex = 0;
+  renderTourStep();
+}
+
+function clearTourHighlights() {
+  document.querySelectorAll('.tour-highlight-target').forEach((el) => {
+    el.classList.remove('tour-highlight-target');
+  });
+}
+
+function renderTourStep() {
+  clearTourHighlights();
+  const card = document.getElementById('tour-floating-card');
+  if (currentTourIndex < 0 || currentTourIndex >= TOUR_STEPS.length) {
+    card.hidden = true;
+    appState.tourCompleted = true;
+    window.StorageEngine.saveState(appState);
+    return;
+  }
+
+  const step = TOUR_STEPS[currentTourIndex];
+  const target = document.querySelector(step.selector);
+  if (target) {
+    target.classList.add('tour-highlight-target');
+    target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  document.getElementById('tour-step-counter').textContent = `PASO ${
+    currentTourIndex + 1
+  } DE ${TOUR_STEPS.length}`;
+  document.getElementById('tour-step-title').textContent = step.title;
+  document.getElementById('tour-step-desc').textContent = step.desc;
+
+  const prevBtn = document.getElementById('tour-prev-btn');
+  const nextBtn = document.getElementById('tour-next-btn');
+  prevBtn.hidden = currentTourIndex === 0;
+  nextBtn.textContent =
+    currentTourIndex === TOUR_STEPS.length - 1 ? 'Finalizar' : 'Siguiente';
+
+  card.hidden = false;
+}
+
+function endGuidedTour() {
+  currentTourIndex = -1;
+  clearTourHighlights();
+  document.getElementById('tour-floating-card').hidden = true;
+  appState.tourCompleted = true;
+  window.StorageEngine.saveState(appState);
 }
 
 function initFormPickers() {
@@ -749,8 +819,10 @@ function openHabitStatsModal(habitId) {
       row.style.cssText =
         'display:flex; justify-content:space-between; align-items:center; padding:0.45rem 0.7rem; background:var(--bg-surface); border:1px solid var(--border-color); border-radius:12px; font-size:0.78rem;';
       row.innerHTML = `
-        <span style="font-weight:600; color:var(--text-primary);">✔️ Registro completado</span>
-        <span class="tabular-nums" style="color:var(--text-muted);">${escapeHtml(dateFormatted)} · ${escapeHtml(timeFormatted)}</span>
+        <span style="font-weight:700; color:var(--text-primary);">Registro completado</span>
+        <span class="tabular-nums" style="color:var(--text-muted);">${escapeHtml(
+          dateFormatted
+        )} · ${escapeHtml(timeFormatted)}</span>
       `;
       logsList.appendChild(row);
     });
@@ -795,10 +867,16 @@ function renderCoachModalContent() {
       'background:var(--bg-surface); border:1px solid var(--border-color); border-radius:16px; padding:0.75rem; display:flex; justify-content:space-between; align-items:center;';
     card.innerHTML = `
       <div>
-        <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; color:var(--text-muted);">${escapeHtml(m.label)}</div>
-        <div style="font-size:0.92rem; font-weight:800; color:var(--text-primary); margin-top:0.1rem;">${escapeHtml(m.value)}</div>
+        <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; color:var(--text-muted);">${escapeHtml(
+          m.label
+        )}</div>
+        <div style="font-size:0.92rem; font-weight:800; color:var(--text-primary); margin-top:0.1rem;">${escapeHtml(
+          m.value
+        )}</div>
       </div>
-      <div style="font-size:0.75rem; font-weight:600; color:var(--text-secondary); text-align:right;">${escapeHtml(m.sub)}</div>
+      <div style="font-size:0.75rem; font-weight:600; color:var(--text-secondary); text-align:right;">${escapeHtml(
+        m.sub
+      )}</div>
     `;
     metricsGrid.appendChild(card);
   });
@@ -848,26 +926,26 @@ function syncCustomizationControls() {
     );
   });
 
-  document.querySelectorAll('[data-shape-opt]').forEach((btn) => {
-    btn.setAttribute(
-      'aria-pressed',
-      btn.dataset.shapeOpt === (prefs.shape || 'squircle') ? 'true' : 'false'
-    );
-  });
-
   const soundCheckbox = document.getElementById('pref-sound-toggle');
   if (soundCheckbox) {
     soundCheckbox.checked = prefs.sound !== false;
+  }
+
+  const toggleBannerBtn = document.getElementById('settings-toggle-banner-btn');
+  if (toggleBannerBtn) {
+    toggleBannerBtn.textContent = appState.bannerDismissed
+      ? 'Mostrar cartel de Sugerencia IA'
+      : 'Ocultar cartel de Sugerencia IA';
   }
 
   const permStatusEl = document.getElementById('notif-permission-status');
   if (permStatusEl) {
     const st = window.NotificationEngine.getPermissionStatus();
     const map = {
-      granted: '✅ Activas en este dispositivo',
-      denied: '⚠️ Bloqueadas en ajustes del navegador',
-      default: '🔔 Pendientes de activar (tocá el botón abajo)',
-      unsupported: 'ℹ️ Notificaciones internas en la app'
+      granted: 'Alertas activas en este dispositivo',
+      denied: 'Alertas bloqueadas en el navegador',
+      default: 'Alertas pendientes de activar',
+      unsupported: 'Alertas internas en la aplicación'
     };
     permStatusEl.textContent = map[st] || st;
   }
@@ -876,6 +954,14 @@ function syncCustomizationControls() {
 function closeModal(modalId) {
   const el = document.getElementById(modalId);
   if (el) el.hidden = true;
+}
+
+function selectPwaTab(os) {
+  document.querySelectorAll('[data-pwa-os]').forEach((b) => {
+    b.setAttribute('aria-selected', b.dataset.pwaOs === os ? 'true' : 'false');
+  });
+  document.getElementById('pwa-panel-ios').hidden = os !== 'ios';
+  document.getElementById('pwa-panel-android').hidden = os !== 'android';
 }
 
 function bindGlobalEvents() {
@@ -908,9 +994,12 @@ function bindGlobalEvents() {
     saveAndRender();
   });
 
-  document.getElementById('coach-banner-close-btn').addEventListener('click', () => {
+  document.getElementById('coach-banner-close-btn').addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
     appState.bannerDismissed = true;
     saveAndRender();
+    showToast('Sugerencia ocultada', null, 'Mostrar');
   });
 
   document.querySelectorAll('[data-coach-tone]').forEach((btn) => {
@@ -922,11 +1011,11 @@ function bindGlobalEvents() {
   });
 
   document.getElementById('reset-demo-data-btn').addEventListener('click', () => {
-    appState = window.StorageEngine.resetToDemoState();
+    appState = window.StorageEngine.resetToDemoState(true, appState);
     applyInterfacePreferences();
     renderAll();
     renderCoachModalContent();
-    showToast('Datos de demostración restaurados');
+    showToast('Datos de prueba restaurados');
   });
 
   document.getElementById('open-settings-btn').addEventListener('click', () => {
@@ -935,29 +1024,109 @@ function bindGlobalEvents() {
   });
 
   document.getElementById('open-pwa-guide-btn').addEventListener('click', () => {
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    selectPwaTab(isIOS ? 'ios' : 'android');
     document.getElementById('pwa-modal').hidden = false;
   });
 
   document.getElementById('widget-open-pwa-btn').addEventListener('click', () => {
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    selectPwaTab(isIOS ? 'ios' : 'android');
     document.getElementById('pwa-modal').hidden = false;
   });
 
-  document.getElementById('edit-name-btn').addEventListener('click', () => {
-    const input = document.getElementById('user-name-input');
-    input.value = appState.userName || 'Sofía';
-    document.getElementById('name-modal').hidden = false;
-    setTimeout(() => input.focus(), 60);
+  document.getElementById('start-tour-btn').addEventListener('click', () => {
+    startGuidedTour();
   });
 
-  document.getElementById('name-form').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const val = document.getElementById('user-name-input').value.trim();
-    if (val) {
-      appState.userName = val;
-      appState.bannerDismissed = false;
-      saveAndRender();
+  document.getElementById('settings-start-tour-btn').addEventListener('click', () => {
+    closeModal('settings-modal');
+    startGuidedTour();
+  });
+
+  document.getElementById('tour-prev-btn').addEventListener('click', () => {
+    if (currentTourIndex > 0) {
+      currentTourIndex--;
+      renderTourStep();
     }
-    closeModal('name-modal');
+  });
+
+  document.getElementById('tour-next-btn').addEventListener('click', () => {
+    if (currentTourIndex < TOUR_STEPS.length - 1) {
+      currentTourIndex++;
+      renderTourStep();
+    } else {
+      endGuidedTour();
+    }
+  });
+
+  document.getElementById('tour-skip-btn').addEventListener('click', () => {
+    endGuidedTour();
+  });
+
+  document.getElementById('edit-profile-btn').addEventListener('click', () => {
+    openOnboardingModal();
+  });
+
+  document.getElementById('settings-edit-profile-btn').addEventListener('click', () => {
+    closeModal('settings-modal');
+    openOnboardingModal();
+  });
+
+  document.querySelectorAll('[data-profile-gender]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      selectedProfileGender = btn.dataset.profileGender;
+      document.querySelectorAll('[data-profile-gender]').forEach((b) => {
+        b.setAttribute(
+          'aria-pressed',
+          b.dataset.profileGender === selectedProfileGender ? 'true' : 'false'
+        );
+      });
+    });
+  });
+
+  document.querySelectorAll('[data-profile-focus]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      selectedProfileFocus = btn.dataset.profileFocus;
+      document.querySelectorAll('[data-profile-focus]').forEach((b) => {
+        b.setAttribute(
+          'aria-pressed',
+          b.dataset.profileFocus === selectedProfileFocus ? 'true' : 'false'
+        );
+      });
+    });
+  });
+
+  document.getElementById('onboarding-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const nameVal = document.getElementById('profile-name-input').value.trim();
+    const ageVal = Number(document.getElementById('profile-age-input').value);
+    const errorEl = document.getElementById('onboarding-error');
+
+    if (!nameVal) {
+      errorEl.textContent = 'Por favor ingresá tu nombre.';
+      errorEl.hidden = false;
+      return;
+    }
+
+    const wasFirstOnboarding = !appState.onboardingCompleted;
+    appState.userName = nameVal;
+    appState.profile = {
+      name: nameVal,
+      age: ageVal > 0 ? ageVal : 24,
+      gender: selectedProfileGender,
+      focus: selectedProfileFocus
+    };
+    appState.onboardingCompleted = true;
+
+    closeModal('onboarding-modal');
+    saveAndRender();
+
+    if (wasFirstOnboarding && !appState.tourCompleted) {
+      setTimeout(() => startGuidedTour(), 250);
+    } else {
+      showToast(`Perfil actualizado para ${nameVal}`);
+    }
   });
 
   document.querySelectorAll('[data-theme-opt]').forEach((btn) => {
@@ -981,13 +1150,6 @@ function bindGlobalEvents() {
     });
   });
 
-  document.querySelectorAll('[data-shape-opt]').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      appState.preferences.shape = btn.dataset.shapeOpt;
-      saveAndRender();
-    });
-  });
-
   document.getElementById('pref-sound-toggle').addEventListener('change', (e) => {
     appState.preferences.sound = e.target.checked;
     saveAndRender();
@@ -997,80 +1159,71 @@ function bindGlobalEvents() {
     const res = await window.NotificationEngine.requestPermission();
     syncCustomizationControls();
     if (res === 'granted') {
-      showToast('¡Permiso de notificaciones activado!');
+      showToast('Permiso de alertas activado');
     } else {
-      showToast('Revisá los permisos del navegador para recibir alertas del sistema.');
+      showToast('Habilitá las notificaciones en la barra de tu navegador');
     }
   });
 
   document.getElementById('test-notif-btn').addEventListener('click', async () => {
     const sent = await window.NotificationEngine.sendNotification({
-      title: '🌸 Ritmo · Recordatorio de prueba',
-      body: `¡Hola ${appState.userName}! Así se ven tus recordatorios de hábitos en tu dispositivo.`,
+      title: 'Ritmo · Recordatorio de prueba',
+      body: `Hola ${appState.userName}, así se ven tus alertas personalizadas de Ritmo.`,
       soundEnabled: appState.preferences.sound
     });
     if (!sent) {
-      showToast(`🔔 Recordatorio de prueba: ¡Hola ${appState.userName}, tus alertas internas funcionan perfecto!`);
+      showToast(`Alerta de prueba: Hola ${appState.userName}, tus recordatorios están listos.`);
     } else {
-      showToast('Notificación enviada a tu dispositivo');
+      showToast('Alerta enviada a tu dispositivo');
     }
   });
 
-  document.getElementById('export-backup-btn').addEventListener('click', () => {
-    const json = window.StorageEngine.exportJSON(appState);
-    const blob = new Blob([json], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `ritmo-backup-${window.toLocalDateKey(new Date())}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-    showToast('Copia de seguridad descargada');
-  });
-
-  document.getElementById('import-backup-input').addEventListener('change', (e) => {
-    const file = e.target.files && e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      try {
-        appState = window.StorageEngine.importJSON(String(reader.result));
-        applyInterfacePreferences();
-        renderAll();
-        showToast('¡Copia de seguridad restaurada con éxito!');
-      } catch (err) {
-        showToast(err.message || 'Archivo inválido');
-      }
-    };
-    reader.readAsText(file);
-  });
-
-  document.getElementById('settings-restore-banner-btn').addEventListener('click', () => {
-    appState.bannerDismissed = false;
+  document.getElementById('settings-toggle-banner-btn').addEventListener('click', () => {
+    appState.bannerDismissed = !appState.bannerDismissed;
     saveAndRender();
-    showToast('Sugerencia del Coach visible nuevamente');
+    showToast(
+      appState.bannerDismissed
+        ? 'Cartel de Sugerencia IA ocultado'
+        : 'Cartel de Sugerencia IA visible en el inicio'
+    );
   });
 
   const pwaDirectBtn = document.getElementById('pwa-direct-install-btn');
   if (pwaDirectBtn) {
     pwaDirectBtn.addEventListener('click', async () => {
-      if (!deferredPwaPrompt) return;
-      deferredPwaPrompt.prompt();
-      await deferredPwaPrompt.userChoice;
-      deferredPwaPrompt = null;
-      pwaDirectBtn.hidden = true;
+      if (deferredPwaPrompt) {
+        deferredPwaPrompt.prompt();
+        await deferredPwaPrompt.userChoice;
+        deferredPwaPrompt = null;
+        closeModal('pwa-modal');
+        showToast('Instalación iniciada en tu dispositivo');
+        return;
+      }
+
+      if (window.matchMedia('(display-mode: standalone)').matches) {
+        showToast('Ritmo ya está instalado en tu pantalla de inicio');
+        return;
+      }
+
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+      selectPwaTab(isIOS ? 'ios' : 'android');
+      const activePanel = document.getElementById(
+        isIOS ? 'pwa-panel-ios' : 'pwa-panel-android'
+      );
+      if (activePanel) {
+        activePanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+      showToast(
+        isIOS
+          ? 'En Safari tocá Compartir y luego "Agregar a inicio"'
+          : 'En el menú de tu navegador (⋮) tocá "Instalar aplicación"'
+      );
     });
   }
 
   document.querySelectorAll('[data-pwa-os]').forEach((btn) => {
     btn.addEventListener('click', () => {
-      const targetOs = btn.dataset.pwaOs;
-      document.querySelectorAll('[data-pwa-os]').forEach((b) => {
-        b.setAttribute('aria-selected', b.dataset.pwaOs === targetOs ? 'true' : 'false');
-      });
-      document.getElementById('pwa-panel-ios').hidden = targetOs !== 'ios';
-      document.getElementById('pwa-panel-android').hidden = targetOs !== 'android';
-      document.getElementById('pwa-panel-local').hidden = targetOs !== 'local';
+      selectPwaTab(btn.dataset.pwaOs);
     });
   });
 
@@ -1082,7 +1235,7 @@ function bindGlobalEvents() {
 
   document.querySelectorAll('.modal-backdrop').forEach((backdrop) => {
     backdrop.addEventListener('click', (e) => {
-      if (e.target === backdrop) {
+      if (e.target === backdrop && backdrop.id !== 'onboarding-modal') {
         backdrop.hidden = true;
       }
     });
@@ -1090,8 +1243,14 @@ function bindGlobalEvents() {
 
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
+      if (currentTourIndex >= 0) {
+        endGuidedTour();
+        return;
+      }
       document.querySelectorAll('.modal-backdrop').forEach((m) => {
-        m.hidden = true;
+        if (m.id !== 'onboarding-modal' || appState.onboardingCompleted) {
+          m.hidden = true;
+        }
       });
     }
   });

@@ -66,6 +66,71 @@ const SoundEngine = {
 const NotificationEngine = {
   firedSlots: {},
   intervalId: null,
+  cachedLogoUrl: null,
+
+  getLogoIconUrl() {
+    if (this.cachedLogoUrl) return this.cachedLogoUrl;
+    try {
+      const canvas = document.createElement('canvas');
+      canvas.width = 192;
+      canvas.height = 192;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return './assets/icon-192.svg';
+
+      // Fondo crema redondeado
+      ctx.fillStyle = '#FAF6F0';
+      ctx.beginPath();
+      ctx.roundRect(0, 0, 192, 192, 44);
+      ctx.fill();
+
+      // Marco interior rosa pastel
+      ctx.fillStyle = '#FCE8EF';
+      ctx.strokeStyle = '#E8C6D4';
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.roundRect(12, 12, 168, 168, 36);
+      ctx.fill();
+      ctx.stroke();
+
+      // Arco de ritmo circular con punta de flecha
+      ctx.strokeStyle = '#9E3B5A';
+      ctx.lineWidth = 11;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.beginPath();
+      ctx.arc(96, 96, 58, 0.72 * Math.PI, 0.22 * Math.PI, false);
+      ctx.stroke();
+
+      // Punta de flecha del arco
+      ctx.beginPath();
+      ctx.moveTo(147, 108);
+      ctx.lineTo(149, 134);
+      ctx.lineTo(123, 130);
+      ctx.stroke();
+
+      // Letra R central
+      ctx.strokeStyle = '#2A2421';
+      ctx.lineWidth = 14;
+      ctx.beginPath();
+      ctx.moveTo(68, 132);
+      ctx.lineTo(68, 60);
+      ctx.lineTo(98, 60);
+      ctx.arc(98, 81, 21, -Math.PI / 2, Math.PI / 2, false);
+      ctx.lineTo(68, 102);
+      ctx.stroke();
+
+      // Pierna diagonal de la R
+      ctx.beginPath();
+      ctx.moveTo(96, 102);
+      ctx.lineTo(122, 132);
+      ctx.stroke();
+
+      this.cachedLogoUrl = canvas.toDataURL('image/png');
+      return this.cachedLogoUrl;
+    } catch (_) {
+      return './assets/icon-192.svg';
+    }
+  },
 
   getPermissionStatus() {
     if (!('Notification' in window)) return 'unsupported';
@@ -84,6 +149,7 @@ const NotificationEngine = {
 
   async sendNotification({ title, body, habitId = null, soundEnabled = true }) {
     SoundEngine.playGoalComplete(soundEnabled);
+    const iconUrl = this.getLogoIconUrl();
 
     if ('Notification' in window && Notification.permission === 'granted') {
       try {
@@ -92,8 +158,8 @@ const NotificationEngine = {
           if (reg && 'showNotification' in reg) {
             await reg.showNotification(title, {
               body,
-              icon: './assets/icon-192.svg',
-              badge: './assets/icon-192.svg',
+              icon: iconUrl,
+              badge: iconUrl,
               tag: habitId || 'ritmo-reminder',
               data: { habitId }
             });
@@ -102,7 +168,7 @@ const NotificationEngine = {
         }
         new Notification(title, {
           body,
-          icon: './assets/icon-192.svg'
+          icon: iconUrl
         });
         return true;
       } catch (_) {}
@@ -141,7 +207,7 @@ const NotificationEngine = {
         if (stats.completedToday) return;
 
         this.firedSlots[slotKey] = true;
-        const title = `${habit.icon} Recordatorio: ${habit.name}`;
+        const title = `Ritmo · ${habit.icon} ${habit.name}`;
         const body =
           habit.reminder.note ||
           `Llevás ${stats.todayCount} de ${stats.goal} hoy. ¡Tomate un momento para sumar +1!`;

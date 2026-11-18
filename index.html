@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es" data-theme="sakura" data-font="soft" data-layout="grid" data-shape="squircle">
+<html lang="es" data-theme="sakura" data-font="soft" data-layout="grid">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,8 +7,8 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="Ritmo">
-  <meta name="description" content="Tracker diario de hábitos con clicker táctil, estética pastel personalizable, recordatorios y reportes dinámicos en memoria local.">
-  <title>Ritmo · Habit Tracker &amp; Coach Diario</title>
+  <meta name="description" content="Tracker diario de hábitos con estética pastel personalizable, recordatorios y reportes dinámicos.">
+  <title>Ritmo · Tracker de Hábitos</title>
 
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="icon" type="image/svg+xml" href="./assets/icon-192.svg">
@@ -16,7 +16,7 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&amp;family=Fraunces:opsz,wght@9..144,600;9..144,700&amp;family=JetBrains+Mono:wght@500;700&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Quicksand:wght@500;600;700&amp;display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="./css/styles.css">
 </head>
@@ -24,34 +24,51 @@
 
   <!-- CABECERA PRINCIPAL -->
   <header class="app-container app-header">
-    <div>
-      <p id="current-date" class="date-eyebrow">MIÉRCOLES, 18 DE NOVIEMBRE</p>
-      <button type="button" id="edit-name-btn" class="greeting-btn" aria-label="Editar tu nombre de perfil">
-        <h1 id="greeting-name-text" style="font-size: inherit; font-weight: inherit; display: inline;">Hola, Sofía</h1>
-        <span class="greeting-edit-icon" aria-hidden="true">
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path>
-          </svg>
-        </span>
-      </button>
+    <div class="header-left">
+      <div class="brand-logo-badge" aria-hidden="true">
+        <svg width="36" height="36" viewBox="0 0 192 192" fill="none">
+          <path d="M40 124 A60 60 0 1 1 146 132" stroke="var(--accent-brand)" stroke-width="13" stroke-linecap="round"/>
+          <path d="M148 106 L150 135 L121 131" stroke="var(--accent-brand)" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M68 134 V60 H98 C113 60 123 69 123 82 C123 95 113 103 98 103 H68" stroke="var(--text-primary)" stroke-width="15" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M97 103 L124 134" stroke="var(--text-primary)" stroke-width="15" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div>
+        <p id="current-date" class="date-eyebrow">MIÉRCOLES, 18 DE NOVIEMBRE</p>
+        <button type="button" id="edit-profile-btn" class="greeting-btn" aria-label="Editar tu perfil personal">
+          <h1 id="greeting-name-text" style="font-size: inherit; font-weight: inherit; display: inline;">Hola, Sofía</h1>
+          <span class="greeting-edit-icon" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path>
+            </svg>
+          </span>
+        </button>
+      </div>
     </div>
 
-    <div class="header-actions">
+    <div class="header-actions" id="header-actions-group">
       <div class="today-counter-pill" aria-label="Total de registros completados hoy">
         <span id="header-today-count" class="today-counter-num tabular-nums">4</span>
         <span class="today-counter-label">hoy</span>
       </div>
 
-      <button type="button" id="open-pwa-guide-btn" class="icon-action-btn" aria-label="Tutorial para instalar la app en tu celular" title="Instalar App / Tutorial PWA">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <button type="button" id="start-tour-btn" class="icon-action-btn" aria-label="Iniciar recorrido guiado por la aplicación" title="Tutorial guiado">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="10"></circle>
+          <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
+        </svg>
+      </button>
+
+      <button type="button" id="open-pwa-guide-btn" class="icon-action-btn" aria-label="Instalar aplicación en el celular" title="Instalar en el celular">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
           <line x1="12" y1="18" x2="12.01" y2="18"></line>
         </svg>
       </button>
 
-      <button type="button" id="open-settings-btn" class="icon-action-btn" aria-label="Abrir menú de personalización y ajustes" title="Personalizar interfaz y ajustes">
+      <button type="button" id="open-settings-btn" class="icon-action-btn" aria-label="Abrir ajustes de la interfaz" title="Ajustes">
         <span id="header-notif-dot" class="notif-indicator-dot" hidden></span>
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <line x1="4" y1="6" x2="20" y2="6"></line>
           <line x1="4" y1="12" x2="20" y2="12"></line>
           <line x1="4" y1="18" x2="20" y2="18"></line>
@@ -64,7 +81,7 @@
   <nav class="app-container tabs-nav" aria-label="Vistas principales">
     <div class="tabs-bar" role="tablist">
       <button type="button" role="tab" id="tab-btn-habits" class="tab-btn" aria-selected="true" aria-controls="view-habits">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <rect x="3" y="3" width="7" height="7" rx="1"></rect>
           <rect x="14" y="3" width="7" height="7" rx="1"></rect>
           <rect x="14" y="14" width="7" height="7" rx="1"></rect>
@@ -74,7 +91,7 @@
       </button>
 
       <button type="button" role="tab" id="tab-btn-widget" class="tab-btn" aria-selected="false" aria-controls="view-widget">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
           <line x1="12" y1="18" x2="12.01" y2="18"></line>
         </svg>
@@ -82,7 +99,7 @@
       </button>
 
       <button type="button" role="tab" id="tab-btn-stats" class="tab-btn" aria-selected="false" aria-controls="view-stats">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <line x1="18" y1="20" x2="18" y2="10"></line>
           <line x1="12" y1="20" x2="12" y2="4"></line>
           <line x1="6" y1="20" x2="6" y2="14"></line>
@@ -93,17 +110,26 @@
   </nav>
 
   <!-- CONTENIDO PRINCIPAL -->
-  <main class="app-container" style="flex: 1; padding-bottom: 6.5rem;">
+  <main class="app-container" style="flex: 1; padding-bottom: 6rem;">
 
     <!-- VISTA 1: MIS HÁBITOS -->
     <section id="view-habits" role="tabpanel" aria-labelledby="tab-btn-habits">
       <!-- Banner de Sugerencia IA / Coach Dinámico -->
       <div id="coach-banner" class="coach-banner">
-        <div class="coach-badge-icon" aria-hidden="true">✨</div>
+        <div class="coach-badge-icon" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 3v3m0 12v3M3 12h3m12 0h3m-2.6-6.4-2.1 2.1M7.7 16.3l-2.1 2.1m0-12.8 2.1 2.1m8.6 8.6 2.1 2.1"></path>
+          </svg>
+        </div>
         <div class="coach-banner-body">
           <div class="coach-banner-header">
             <span id="coach-banner-title" class="coach-banner-title">SUGERENCIA IA</span>
-            <button type="button" id="coach-banner-close-btn" class="coach-close-btn" aria-label="Ocultar sugerencia">✕</button>
+            <button type="button" id="coach-banner-close-btn" class="coach-close-btn" aria-label="Quitar sugerencia">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
           </div>
           <p id="coach-banner-text" class="coach-banner-text">
             La semana pasada hiciste "Tomar agua" 36 veces. Hoy llevás 2; ¡tomate un momento para sumar uno ahora!
@@ -113,7 +139,11 @@
               +1 💧 Tomar agua
             </button>
             <button type="button" id="coach-banner-next-btn" class="coach-mini-btn">
-              Siguiente consejo ↻
+              <span>Siguiente consejo</span>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"></path>
+                <path d="M21 3v5h-5"></path>
+              </svg>
             </button>
           </div>
         </div>
@@ -137,10 +167,9 @@
 
       <!-- Estado Vacío -->
       <div id="empty-state" class="empty-state-card" hidden>
-        <div class="empty-state-icon" aria-hidden="true">🌱</div>
         <h2 style="font-size: 1.05rem; font-weight: 800; margin-bottom: 0.35rem;">Todavía no creaste hábitos</h2>
         <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.1rem;">
-          Empezá agregando un hábito pequeño y alcanzable con tus colores e íconos favoritos.
+          Agregá tu primer hábito diario eligiendo su ícono, color pastel y objetivo.
         </p>
         <button type="button" id="empty-create-btn" class="primary-cta-btn" style="max-width: 240px; margin: 0 auto;">
           + Crear primer hábito
@@ -148,45 +177,37 @@
       </div>
     </section>
 
-    <!-- VISTA 2: WIDGET CELULAR -->
+    <!-- VISTA 2: WIDGET CELULAR (PRÓXIMAMENTE) -->
     <section id="view-widget" role="tabpanel" aria-labelledby="tab-btn-widget" hidden>
-      <div class="widget-showcase-card">
-        <div style="display:flex; justify-content:space-between; align-items:center; gap:0.5rem;">
-          <div>
-            <span style="font-size:0.68rem; font-weight:800; text-transform:uppercase; letter-spacing:0.05em; background:var(--accent-brand-soft); color:var(--accent-brand); padding:0.2rem 0.55rem; border-radius:8px;">
-              Gadget Interactivo
-            </span>
-            <h2 style="font-size:1.05rem; font-weight:800; margin-top:0.35rem;">Widget Cuadrícula 2x2</h2>
-          </div>
-          <span style="font-size:0.75rem; color:var(--text-muted);">Tocá para sumar +1</span>
+      <div class="coming-soon-card">
+        <div class="coming-soon-badge">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+          <span>Próximamente...</span>
         </div>
 
-        <div class="widget-phone-frame">
-          <div id="widget-2x2-container" class="widget-grid-2x2"></div>
-        </div>
-      </div>
-
-      <div class="widget-showcase-card">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
-          <div>
-            <span style="font-size:0.68rem; font-weight:800; text-transform:uppercase; letter-spacing:0.05em; background:var(--bg-subtle); color:var(--text-secondary); padding:0.2rem 0.55rem; border-radius:8px;">
-              Barra Compacta
-            </span>
-            <h2 style="font-size:1.05rem; font-weight:800; margin-top:0.35rem;">Acceso Rápido Deslizable</h2>
-          </div>
-          <span style="font-size:0.75rem; color:var(--text-muted);">Deslizá ➔</span>
+        <div style="width:76px; height:76px; border-radius:24px; background:var(--bg-subtle); border:1.5px solid var(--border-color); margin:0 auto 1.1rem; display:flex; align-items:center; justify-content:center;">
+          <svg width="46" height="46" viewBox="0 0 192 192" fill="none" aria-hidden="true">
+            <path d="M40 124 A60 60 0 1 1 146 132" stroke="var(--accent-brand)" stroke-width="13" stroke-linecap="round"/>
+            <path d="M148 106 L150 135 L121 131" stroke="var(--accent-brand)" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M68 134 V60 H98 C113 60 123 69 123 82 C123 95 113 103 98 103 H68" stroke="var(--text-primary)" stroke-width="15" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M97 103 L124 134" stroke="var(--text-primary)" stroke-width="15" stroke-linecap="round"/>
+          </svg>
         </div>
 
-        <div id="widget-scroll-container" class="widget-horizontal-strip"></div>
-      </div>
-
-      <div class="widget-showcase-card" style="background:var(--bg-subtle);">
-        <h3 style="font-size:0.92rem; font-weight:800; margin-bottom:0.35rem;">📱 ¿Querés tenerla directo en la pantalla de tu celu?</h3>
-        <p style="font-size:0.82rem; color:var(--text-secondary); margin-bottom:0.85rem;">
-          Podés instalar Ritmo como una aplicación nativa (PWA) sin pasar por la tienda de aplicaciones. Funciona sin internet y guarda todo tu progreso en la memoria de tu teléfono.
+        <h2 style="font-size:1.2rem; font-weight:800; margin-bottom:0.45rem;">Widgets para tu pantalla de inicio</h2>
+        <p style="font-size:0.88rem; color:var(--text-secondary); max-width:340px; margin:0 auto 1.25rem; line-height:1.5;">
+          Estamos preparando los widgets nativos para que puedas sumar tus hábitos directamente desde la pantalla principal de tu celular sin abrir la aplicación.
         </p>
-        <button type="button" id="widget-open-pwa-btn" class="primary-cta-btn">
-          Ver tutorial paso a paso para instalarla
+
+        <button type="button" id="widget-open-pwa-btn" class="secondary-cta-btn" style="margin:0 auto;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+            <line x1="12" y1="18" x2="12.01" y2="18"></line>
+          </svg>
+          <span>Instalar acceso directo de la app</span>
         </button>
       </div>
     </section>
@@ -210,12 +231,11 @@
 
       <div class="widget-showcase-card">
         <h2 style="font-size:0.98rem; font-weight:800;">Actividad de los últimos 7 días</h2>
-        <p style="font-size:0.76rem; color:var(--text-muted);">Total de toques registrados por día en todos tus hábitos</p>
         <div id="global-7days-chart" class="chart-bars-row"></div>
       </div>
 
       <div class="widget-showcase-card">
-        <h2 style="font-size:0.98rem; font-weight:800; margin-bottom:0.65rem;">Tus horarios más activos</h2>
+        <h2 style="font-size:0.98rem; font-weight:800; margin-bottom:0.65rem;">Horarios más activos</h2>
         <div id="global-time-distribution"></div>
       </div>
 
@@ -237,10 +257,82 @@
   <!-- CONTENEDOR DE AVISOS / DESHACER -->
   <div id="toast-container" class="toast-container"></div>
 
-  <!-- PIE DE PÁGINA -->
-  <footer class="app-container" style="padding-bottom: 1.5rem; text-align: center; font-size: 0.74rem; color: var(--text-muted);">
-    <span>Ritmo PWA · Tus datos se guardan automáticamente en la memoria de este dispositivo.</span>
-  </footer>
+  <!-- TARJETA FLOTANTE DEL TUTORIAL GUIADO PASO A PASO -->
+  <div id="tour-floating-card" class="tour-floating-card" role="dialog" aria-modal="false" aria-labelledby="tour-step-title" hidden>
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <span id="tour-step-counter" class="tour-step-counter">PASO 1 DE 5</span>
+      <button type="button" id="tour-skip-btn" style="background:transparent; border:none; color:var(--text-muted); font-size:0.76rem; font-weight:700; min-height:36px; padding:0 0.35rem;">
+        Saltar guía
+      </button>
+    </div>
+    <h2 id="tour-step-title" style="font-size:1.05rem; font-weight:800; margin-bottom:0.3rem; color:var(--text-primary);"></h2>
+    <p id="tour-step-desc" style="font-size:0.84rem; color:var(--text-secondary); line-height:1.45; margin-bottom:0.95rem;"></p>
+    <div style="display:flex; justify-content:space-between; align-items:center; gap:0.5rem;">
+      <button type="button" id="tour-prev-btn" class="secondary-cta-btn" style="min-height:42px; padding:0.4rem 0.85rem;">
+        Anterior
+      </button>
+      <button type="button" id="tour-next-btn" class="primary-cta-btn" style="width:auto; min-height:42px; padding:0.4rem 1.25rem;">
+        Siguiente
+      </button>
+    </div>
+  </div>
+
+  <!-- MODAL 0: MINI CUESTIONARIO DE BIENVENIDA / PERFIL PERSONALIZADO -->
+  <div id="onboarding-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="onboarding-title" hidden>
+    <div class="modal-sheet">
+      <div style="display:flex; align-items:center; gap:0.75rem; margin-bottom:1rem;">
+        <div class="brand-logo-badge" aria-hidden="true">
+          <svg width="34" height="34" viewBox="0 0 192 192" fill="none">
+            <path d="M40 124 A60 60 0 1 1 146 132" stroke="var(--accent-brand)" stroke-width="13" stroke-linecap="round"/>
+            <path d="M148 106 L150 135 L121 131" stroke="var(--accent-brand)" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M68 134 V60 H98 C113 60 123 69 123 82 C123 95 113 103 98 103 H68" stroke="var(--text-primary)" stroke-width="15" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M97 103 L124 134" stroke="var(--text-primary)" stroke-width="15" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div>
+          <h2 id="onboarding-title" class="modal-title">Personalizá tu Ritmo</h2>
+          <p style="font-size:0.8rem; color:var(--text-secondary);">Completá estos datos básicos para adaptar tus sugerencias</p>
+        </div>
+      </div>
+
+      <form id="onboarding-form" novalidate>
+        <div style="display:grid; grid-template-columns: 1.5fr 1fr; gap:0.65rem;" class="form-group">
+          <div>
+            <label for="profile-name-input" class="form-label">Nombre</label>
+            <input type="text" id="profile-name-input" class="text-input" placeholder="Ej. Sofía" maxlength="28" required>
+          </div>
+          <div>
+            <label for="profile-age-input" class="form-label">Edad</label>
+            <input type="number" id="profile-age-input" class="text-input tabular-nums" placeholder="24" min="10" max="100" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <span class="form-label" id="gender-group-label">Sexo / Género</span>
+          <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:0.45rem;" role="group" aria-labelledby="gender-group-label">
+            <button type="button" class="secondary-cta-btn" data-profile-gender="femenino" aria-pressed="true">Femenino</button>
+            <button type="button" class="secondary-cta-btn" data-profile-gender="masculino" aria-pressed="false">Masculino</button>
+            <button type="button" class="secondary-cta-btn" data-profile-gender="no_binario" aria-pressed="false">No binario</button>
+            <button type="button" class="secondary-cta-btn" data-profile-gender="otro" aria-pressed="false">Prefiero no decir</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <span class="form-label" id="focus-group-label">¿Cuál es tu enfoque principal?</span>
+          <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:0.45rem;" role="group" aria-labelledby="focus-group-label">
+            <button type="button" class="secondary-cta-btn" data-profile-focus="bienestar" aria-pressed="true">Bienestar y salud</button>
+            <button type="button" class="secondary-cta-btn" data-profile-focus="energia" aria-pressed="false">Energía y movimiento</button>
+            <button type="button" class="secondary-cta-btn" data-profile-focus="calma" aria-pressed="false">Calma y descanso</button>
+            <button type="button" class="secondary-cta-btn" data-profile-focus="enfoque" aria-pressed="false">Lectura y enfoque</button>
+          </div>
+        </div>
+
+        <p id="onboarding-error" style="color:#B42318; font-size:0.78rem; font-weight:700; margin-bottom:0.65rem;" hidden></p>
+
+        <button type="submit" class="primary-cta-btn">Guardar y continuar</button>
+      </form>
+    </div>
+  </div>
 
   <!-- MODAL 1: CREAR / EDITAR HÁBITO -->
   <div id="habit-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="habit-modal-title" hidden>
@@ -258,10 +350,10 @@
         </div>
 
         <div class="form-group">
-          <label class="form-label" id="emoji-picker-label">Elegí un ícono</label>
+          <label class="form-label" id="emoji-picker-label">Elegí un ícono para la tarjeta</label>
           <div id="emoji-picker-grid" class="emoji-picker-grid" role="group" aria-labelledby="emoji-picker-label"></div>
           <div style="margin-top:0.55rem; display:flex; align-items:center; gap:0.5rem;">
-            <label for="custom-emoji-input" style="font-size:0.76rem; color:var(--text-secondary); font-weight:600;">O escribí otro emoji:</label>
+            <label for="custom-emoji-input" style="font-size:0.76rem; color:var(--text-secondary); font-weight:600;">Otro emoji:</label>
             <input type="text" id="custom-emoji-input" class="text-input" placeholder="🌸" maxlength="4" style="width:72px; min-height:44px; text-align:center; padding:0.35rem;">
           </div>
         </div>
@@ -282,7 +374,11 @@
         <div class="form-group" style="background:var(--bg-subtle); padding:0.9rem; border-radius:18px; border:1px solid var(--border-color);">
           <div style="display:flex; align-items:center; justify-content:space-between; gap:0.5rem;">
             <label for="habit-reminder-enabled" style="font-size:0.84rem; font-weight:700; display:flex; align-items:center; gap:0.4rem;">
-              <span>🔔 Programar recordatorio</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+              </svg>
+              <span>Programar recordatorio</span>
             </label>
             <input type="checkbox" id="habit-reminder-enabled" style="width:22px; height:22px; accent-color:var(--accent-primary);">
           </div>
@@ -294,8 +390,8 @@
                 <input type="time" id="habit-reminder-time" class="text-input" value="10:00" style="padding:0.45rem 0.6rem;">
               </div>
               <div>
-                <label for="habit-reminder-note" style="display:block; font-size:0.74rem; font-weight:700; color:var(--text-secondary); margin-bottom:0.25rem;">Mensaje motivador</label>
-                <input type="text" id="habit-reminder-note" class="text-input" placeholder="Ej. ¡Sumá un vaso de agua!" maxlength="80" style="padding:0.45rem 0.75rem;">
+                <label for="habit-reminder-note" style="display:block; font-size:0.74rem; font-weight:700; color:var(--text-secondary); margin-bottom:0.25rem;">Mensaje</label>
+                <input type="text" id="habit-reminder-note" class="text-input" placeholder="Ej. Sumá un vaso de agua" maxlength="80" style="padding:0.45rem 0.75rem;">
               </div>
             </div>
 
@@ -322,18 +418,21 @@
     <div class="modal-sheet">
       <div class="modal-header">
         <div style="display:flex; align-items:center; gap:0.65rem;">
-          <div class="coach-badge-icon" aria-hidden="true">✨</div>
+          <div class="coach-badge-icon" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 3v3m0 12v3M3 12h3m12 0h3m-2.6-6.4-2.1 2.1M7.7 16.3l-2.1 2.1m0-12.8 2.1 2.1m8.6 8.6 2.1 2.1"></path>
+            </svg>
+          </div>
           <h2 id="coach-modal-title" class="modal-title">Coach de Hábitos IA</h2>
         </div>
         <button type="button" class="modal-close-btn" data-close-modal="coach-modal" aria-label="Cerrar informe">✕</button>
       </div>
 
       <div style="margin-bottom:0.85rem;">
-        <span style="display:block; font-size:0.74rem; font-weight:700; color:var(--text-secondary); margin-bottom:0.4rem;">Estilo del informe dinámico:</span>
         <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:0.4rem;">
-          <button type="button" class="secondary-cta-btn" data-coach-tone="sweet" aria-pressed="true" style="font-size:0.76rem; padding:0.4rem;">💖 Motivador</button>
-          <button type="button" class="secondary-cta-btn" data-coach-tone="direct" aria-pressed="false" style="font-size:0.76rem; padding:0.4rem;">🎯 Directo</button>
-          <button type="button" class="secondary-cta-btn" data-coach-tone="zen" aria-pressed="false" style="font-size:0.76rem; padding:0.4rem;">🌿 Calma Zen</button>
+          <button type="button" class="secondary-cta-btn" data-coach-tone="sweet" aria-pressed="true" style="font-size:0.78rem; padding:0.4rem;">Motivador</button>
+          <button type="button" class="secondary-cta-btn" data-coach-tone="direct" aria-pressed="false" style="font-size:0.78rem; padding:0.4rem;">Directo</button>
+          <button type="button" class="secondary-cta-btn" data-coach-tone="zen" aria-pressed="false" style="font-size:0.78rem; padding:0.4rem;">Calma</button>
         </div>
       </div>
 
@@ -349,7 +448,7 @@
       </button>
 
       <div style="display:flex; align-items:center; justify-content:space-between; gap:0.75rem; margin-top:0.4rem;">
-        <button type="button" id="reset-demo-data-btn" style="background:transparent; border:none; color:var(--text-muted); font-size:0.8rem; font-weight:600; text-decoration:underline; padding:0.5rem 0; min-height:44px;">
+        <button type="button" id="reset-demo-data-btn" style="background:transparent; border:none; color:var(--text-muted); font-size:0.8rem; font-weight:700; text-decoration:underline; padding:0.5rem 0; min-height:44px;">
           Reiniciar datos de prueba
         </button>
         <button type="button" class="primary-cta-btn" data-close-modal="coach-modal" style="width:auto; padding:0 1.65rem;">
@@ -359,15 +458,15 @@
     </div>
   </div>
 
-  <!-- MODAL 3: ESTADÍSTICAS Y DETALLE DE HÁBITO INDIVIDUAL -->
+  <!-- MODAL 3: OPCIONES Y ESTADÍSTICAS DE TARJETA INDIVIDUAL (?) -->
   <div id="stats-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="stats-habit-name" hidden>
     <div class="modal-sheet">
       <div class="modal-header">
         <div style="display:flex; align-items:center; gap:0.55rem;">
           <span id="stats-habit-icon" style="font-size:1.5rem;" aria-hidden="true">💧</span>
-          <h2 id="stats-habit-name" class="modal-title">Estadísticas</h2>
+          <h2 id="stats-habit-name" class="modal-title">Opciones y Estadísticas</h2>
         </div>
-        <button type="button" class="modal-close-btn" data-close-modal="stats-modal" aria-label="Cerrar estadísticas">✕</button>
+        <button type="button" class="modal-close-btn" data-close-modal="stats-modal" aria-label="Cerrar opciones de tarjeta">✕</button>
       </div>
 
       <!-- Controles rápidos +1 / -1 -->
@@ -376,7 +475,7 @@
           -1 Corregir hoy
         </button>
         <button type="button" id="stats-plus-today-btn" class="primary-cta-btn" style="flex:1.4; min-height:46px;">
-          +1 Sumar registro hoy
+          +1 Sumar hoy
         </button>
       </div>
 
@@ -400,45 +499,52 @@
       </div>
 
       <div style="background:var(--bg-surface); border:1px solid var(--border-color); border-radius:20px; padding:0.9rem; margin-bottom:1rem;">
-        <span style="font-size:0.74rem; font-weight:800; text-transform:uppercase; color:var(--text-muted);">Evolución últimos 7 días</span>
+        <span style="font-size:0.74rem; font-weight:800; text-transform:uppercase; color:var(--text-muted);">Últimos 7 días</span>
         <div id="habit-7days-chart" class="chart-bars-row" style="height:105px;"></div>
       </div>
 
       <div style="background:var(--bg-subtle); border:1px solid var(--border-color); border-radius:20px; padding:0.95rem; margin-bottom:1rem;">
         <div style="font-size:0.74rem; font-weight:800; text-transform:uppercase; color:var(--accent-amber); margin-bottom:0.3rem;">
-          ✨ Análisis Dinámico y Recordatorio
+          Análisis y Recordatorio
         </div>
         <p id="stats-ai-insight" style="font-size:0.82rem; color:var(--text-primary); line-height:1.45; margin-bottom:0.45rem;"></p>
-        <p id="stats-reminder-summary" style="font-size:0.76rem; font-weight:600; color:var(--text-secondary);"></p>
+        <p id="stats-reminder-summary" style="font-size:0.76rem; font-weight:700; color:var(--text-secondary);"></p>
       </div>
 
       <div style="margin-bottom:1rem;">
-        <span style="display:block; font-size:0.74rem; font-weight:800; text-transform:uppercase; color:var(--text-muted); margin-bottom:0.45rem;">Últimos registros guardados</span>
-        <div id="stats-logs-list" style="display:grid; gap:0.35rem; max-height:140px; overflow-y:auto;"></div>
+        <span style="display:block; font-size:0.74rem; font-weight:800; text-transform:uppercase; color:var(--text-muted); margin-bottom:0.45rem;">Últimos registros</span>
+        <div id="stats-logs-list" style="display:grid; gap:0.35rem; max-height:130px; overflow-y:auto;"></div>
       </div>
 
       <div style="display:flex; gap:0.55rem;">
         <button type="button" id="stats-edit-habit-btn" class="secondary-cta-btn" style="flex:1;">
-          ✏️ Editar hábito / alerta
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path>
+          </svg>
+          <span>Editar hábito</span>
         </button>
         <button type="button" id="stats-delete-habit-btn" class="secondary-cta-btn" style="color:#B42318; border-color:#F2CEDB;">
-          🗑️ Eliminar
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+          </svg>
+          <span>Eliminar</span>
         </button>
       </div>
     </div>
   </div>
 
-  <!-- MODAL 4: MENÚ HAMBURGUESA / PERSONALIZACIÓN DE INTERFAZ Y AJUSTES -->
+  <!-- MODAL 4: AJUSTES DE LA INTERFAZ -->
   <div id="settings-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="settings-modal-title" hidden>
     <div class="modal-sheet">
       <div class="modal-header">
-        <h2 id="settings-modal-title" class="modal-title">Personalizar Interfaz y Ajustes</h2>
+        <h2 id="settings-modal-title" class="modal-title">Ajustes</h2>
         <button type="button" class="modal-close-btn" data-close-modal="settings-modal" aria-label="Cerrar ajustes">✕</button>
       </div>
 
-      <!-- 1. Paleta de la Interfaz -->
+      <!-- 1. Tema de Color -->
       <div class="form-group">
-        <span class="form-label">🎨 Tema de color de la interfaz</span>
+        <span class="form-label">Tema de la interfaz</span>
         <div class="theme-options-grid">
           <button type="button" class="theme-card-btn" data-theme-opt="sakura" aria-pressed="true">
             <span class="theme-preview-dots"><span style="background:#FAF6F0"></span><span style="background:#FCE8EF"></span><span style="background:#9E3B5A"></span></span>
@@ -458,104 +564,89 @@
           </button>
           <button type="button" class="theme-card-btn" data-theme-opt="night" aria-pressed="false" style="grid-column: span 2;">
             <span class="theme-preview-dots"><span style="background:#1D1922"></span><span style="background:#38232E"></span><span style="background:#F5B8D0"></span></span>
-            <span>🌙 Cozy Night (Modo Oscuro Pastel)</span>
+            <span>Cozy Night (Modo Oscuro)</span>
           </button>
         </div>
       </div>
 
-      <!-- 2. Tipografía -->
+      <!-- 2. Fuente global -->
       <div class="form-group">
-        <span class="form-label">🔤 Estilo de letra</span>
+        <span class="form-label">Fuente de toda la app</span>
         <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:0.45rem;">
-          <button type="button" class="secondary-cta-btn" data-font-opt="soft" aria-pressed="true" style="font-size:0.78rem;">Redondeada</button>
-          <button type="button" class="secondary-cta-btn" data-font-opt="editorial" aria-pressed="false" style="font-size:0.78rem; font-family:'Fraunces',serif;">Editorial</button>
-          <button type="button" class="secondary-cta-btn" data-font-opt="clean" aria-pressed="false" style="font-size:0.78rem;">Minimal</button>
+          <button type="button" class="secondary-cta-btn" data-font-opt="soft" aria-pressed="true" style="font-family:'Quicksand',sans-serif;">Redondeada</button>
+          <button type="button" class="secondary-cta-btn" data-font-opt="editorial" aria-pressed="false" style="font-family:'Fraunces',serif;">Editorial</button>
+          <button type="button" class="secondary-cta-btn" data-font-opt="clean" aria-pressed="false" style="font-family:'Plus Jakarta Sans',sans-serif;">Moderna</button>
         </div>
       </div>
 
-      <!-- 3. Disposición y Bordes -->
-      <div class="form-group" style="display:grid; grid-template-columns:1fr 1fr; gap:0.65rem;">
-        <div>
-          <span class="form-label">📐 Vista de tarjetas</span>
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.35rem;">
-            <button type="button" class="secondary-cta-btn" data-layout-opt="grid" aria-pressed="true" style="font-size:0.76rem; padding:0.4rem;">2 Col.</button>
-            <button type="button" class="secondary-cta-btn" data-layout-opt="list" aria-pressed="false" style="font-size:0.76rem; padding:0.4rem;">Lista</button>
-          </div>
-        </div>
-        <div>
-          <span class="form-label">✨ Forma de tarjetas</span>
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.35rem;">
-            <button type="button" class="secondary-cta-btn" data-shape-opt="squircle" aria-pressed="true" style="font-size:0.76rem; padding:0.4rem;">Squircle</button>
-            <button type="button" class="secondary-cta-btn" data-shape-opt="classic" aria-pressed="false" style="font-size:0.76rem; padding:0.4rem;">Clásica</button>
-          </div>
+      <!-- 3. Vista de Tarjetas -->
+      <div class="form-group">
+        <span class="form-label">Vista de tarjetas</span>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.45rem;">
+          <button type="button" class="secondary-cta-btn" data-layout-opt="grid" aria-pressed="true">Cuadrícula (2 columnas)</button>
+          <button type="button" class="secondary-cta-btn" data-layout-opt="list" aria-pressed="false">Lista (1 columna)</button>
         </div>
       </div>
 
-      <!-- 4. Sonido y Notificaciones -->
+      <!-- 4. Notificaciones y Sonido -->
       <div class="form-group" style="background:var(--bg-subtle); padding:0.9rem; border-radius:18px; border:1px solid var(--border-color);">
         <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.75rem;">
-          <label for="pref-sound-toggle" style="font-size:0.84rem; font-weight:700;">🔊 Sonido suave al sumar +1</label>
+          <label for="pref-sound-toggle" style="font-size:0.84rem; font-weight:700;">Sonido al sumar +1</label>
           <input type="checkbox" id="pref-sound-toggle" checked style="width:22px; height:22px; accent-color:var(--accent-primary);">
         </div>
 
         <div style="border-top:1px solid var(--border-color); padding-top:0.75rem;">
-          <div style="font-size:0.78rem; font-weight:700; margin-bottom:0.2rem;">Estado de Notificaciones:</div>
-          <div id="notif-permission-status" style="font-size:0.78rem; color:var(--text-secondary); margin-bottom:0.6rem;"></div>
-          <div style="display:flex; gap:0.45rem; flex-wrap:wrap;">
+          <div id="notif-permission-status" style="font-size:0.78rem; font-weight:600; color:var(--text-secondary); margin-bottom:0.55rem;"></div>
+          <div style="display:flex; gap:0.45rem;">
             <button type="button" id="request-notif-btn" class="secondary-cta-btn" style="flex:1; font-size:0.76rem;">
-              Permitir alertas
+              Activar alertas
             </button>
             <button type="button" id="test-notif-btn" class="secondary-cta-btn" style="flex:1; font-size:0.76rem;">
-              Probar notificación
+              Probar alerta
             </button>
           </div>
         </div>
       </div>
 
-      <!-- 5. Memoria y Copia de Seguridad -->
-      <div class="form-group">
-        <span class="form-label">💾 Memoria Permanente y Respaldo</span>
-        <p style="font-size:0.76rem; color:var(--text-secondary); margin-bottom:0.6rem;">
-          Todos tus registros quedan guardados en este dispositivo. También podés exportar o restaurar un archivo de respaldo:
-        </p>
-        <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
-          <button type="button" id="export-backup-btn" class="secondary-cta-btn" style="flex:1; font-size:0.78rem;">
-            ⬇️ Exportar datos (.json)
-          </button>
-          <label for="import-backup-input" class="secondary-cta-btn" style="flex:1; font-size:0.78rem;">
-            ⬆️ Importar (.json)
-          </label>
-          <input type="file" id="import-backup-input" accept=".json,application/json" class="sr-only">
-        </div>
-        <button type="button" id="settings-restore-banner-btn" class="secondary-cta-btn" style="width:100%; margin-top:0.5rem; font-size:0.76rem;">
-          Mostrar cartel de Sugerencia IA en inicio
+      <!-- 5. Acciones rápidas -->
+      <div class="form-group" style="display:grid; gap:0.45rem;">
+        <button type="button" id="settings-toggle-banner-btn" class="secondary-cta-btn" style="width:100%;">
+          Mostrar cartel de Sugerencia IA
         </button>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.45rem;">
+          <button type="button" id="settings-edit-profile-btn" class="secondary-cta-btn">
+            Editar perfil
+          </button>
+          <button type="button" id="settings-start-tour-btn" class="secondary-cta-btn">
+            Ver tutorial guiado
+          </button>
+        </div>
       </div>
 
       <button type="button" class="primary-cta-btn" data-close-modal="settings-modal">Listo</button>
     </div>
   </div>
 
-  <!-- MODAL 5: TUTORIAL PWA PARA NEWBIES -->
+  <!-- MODAL 5: INSTALAR EN TU CELULAR (PWA SIMPLE) -->
   <div id="pwa-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="pwa-modal-title" hidden>
     <div class="modal-sheet">
       <div class="modal-header">
-        <h2 id="pwa-modal-title" class="modal-title">Instalá la App en tu Celu 📱</h2>
+        <h2 id="pwa-modal-title" class="modal-title">Instalar Ritmo en tu celular</h2>
         <button type="button" class="modal-close-btn" data-close-modal="pwa-modal" aria-label="Cerrar guía de instalación">✕</button>
       </div>
 
-      <p style="font-size:0.84rem; color:var(--text-secondary); margin-bottom:0.9rem;">
-        No necesitás entrar a Play Store ni App Store. Seguí estos 3 pasitos simples según tu teléfono para tener el ícono en tu pantalla de inicio y usarla sin internet:
-      </p>
-
-      <button type="button" id="pwa-direct-install-btn" class="primary-cta-btn" style="margin-bottom:0.9rem; background:var(--accent-brand); color:#FFFFFF;" hidden>
-        📲 Instalar Ritmo automáticamente ahora
+      <button type="button" id="pwa-direct-install-btn" class="primary-cta-btn" style="margin-bottom:0.95rem; background:var(--accent-brand); color:#FFFFFF;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="7 10 12 15 17 10"></polyline>
+          <line x1="12" y1="15" x2="12" y2="3"></line>
+        </svg>
+        <span>Instalar Ritmo ahora</span>
       </button>
 
-      <div class="tabs-bar" role="tablist" style="margin-bottom:1rem;">
-        <button type="button" role="tab" class="tab-btn" data-pwa-os="ios" aria-selected="true">🍎 iPhone</button>
-        <button type="button" role="tab" class="tab-btn" data-pwa-os="android" aria-selected="false">🤖 Android</button>
-        <button type="button" role="tab" class="tab-btn" data-pwa-os="local" aria-selected="false">💡 Tips &amp; Datos</button>
+      <div class="tabs-bar" role="tablist" style="grid-template-columns:repeat(2,1fr); margin-bottom:1rem;">
+        <button type="button" role="tab" class="tab-btn" data-pwa-os="ios" aria-selected="true">iPhone (Safari)</button>
+        <button type="button" role="tab" class="tab-btn" data-pwa-os="android" aria-selected="false">Android (Chrome)</button>
       </div>
 
       <!-- Panel iOS -->
@@ -563,9 +654,9 @@
         <div class="tutorial-step-card">
           <div class="tutorial-step-num">1</div>
           <div>
-            <div style="font-weight:700; font-size:0.86rem;">Abrí esta página en Safari</div>
+            <div style="font-weight:700; font-size:0.86rem;">Tocá el botón Compartir</div>
             <p style="font-size:0.78rem; color:var(--text-secondary); margin-top:0.15rem;">
-              En tu iPhone, mirá la barra de abajo de Safari y tocá el botón <strong>Compartir</strong> (el cuadradito con una flecha hacia arriba <code>[↑]</code>).
+              En la barra inferior de Safari, tocá el ícono del cuadradito con una flecha hacia arriba.
             </p>
           </div>
         </div>
@@ -574,16 +665,16 @@
           <div>
             <div style="font-weight:700; font-size:0.86rem;">Elegí "Agregar a inicio"</div>
             <p style="font-size:0.78rem; color:var(--text-secondary); margin-top:0.15rem;">
-              Deslizá la lista de opciones hacia arriba hasta encontrar <strong>"Agregar a inicio"</strong> (tiene un ícono con un signo <code>+</code>).
+              Deslizá las opciones hacia arriba y seleccioná <strong>Agregar a inicio</strong>.
             </p>
           </div>
         </div>
         <div class="tutorial-step-card">
           <div class="tutorial-step-num">3</div>
           <div>
-            <div style="font-weight:700; font-size:0.86rem;">Confirmá tocando "Agregar"</div>
+            <div style="font-weight:700; font-size:0.86rem;">Confirmá en "Agregar"</div>
             <p style="font-size:0.78rem; color:var(--text-secondary); margin-top:0.15rem;">
-              Tocá <strong>Agregar</strong> arriba a la derecha. ¡Listo! Ya vas a ver el ícono pastel de <strong>Ritmo</strong> junto a tus demás apps y se abrirá a pantalla completa.
+              Tocá <strong>Agregar</strong> arriba a la derecha y ya vas a tener el ícono de Ritmo en tu pantalla principal.
             </p>
           </div>
         </div>
@@ -594,83 +685,35 @@
         <div class="tutorial-step-card">
           <div class="tutorial-step-num">1</div>
           <div>
-            <div style="font-weight:700; font-size:0.86rem;">Abrí el menú de Chrome</div>
+            <div style="font-weight:700; font-size:0.86rem;">Abrí el menú del navegador</div>
             <p style="font-size:0.78rem; color:var(--text-secondary); margin-top:0.15rem;">
-              Tocá los <strong>tres puntitos verticales (⋮)</strong> ubicados arriba a la derecha en tu navegador Chrome o Samsung Internet.
+              Tocá los tres puntos verticales arriba a la derecha en Chrome.
             </p>
           </div>
         </div>
         <div class="tutorial-step-card">
           <div class="tutorial-step-num">2</div>
           <div>
-            <div style="font-weight:700; font-size:0.86rem;">Tocá "Instalar aplicación"</div>
+            <div style="font-weight:700; font-size:0.86rem;">Seleccioná "Instalar aplicación"</div>
             <p style="font-size:0.78rem; color:var(--text-secondary); margin-top:0.15rem;">
-              Buscá en el menú la opción <strong>"Instalar aplicación"</strong> o <strong>"Agregar a la pantalla principal"</strong>.
+              Elegí la opción <strong>Instalar aplicación</strong> o <strong>Agregar a la pantalla principal</strong>.
             </p>
           </div>
         </div>
         <div class="tutorial-step-card">
           <div class="tutorial-step-num">3</div>
           <div>
-            <div style="font-weight:700; font-size:0.86rem;">Aceptá y abrila desde tu pantalla</div>
+            <div style="font-weight:700; font-size:0.86rem;">Confirmá la instalación</div>
             <p style="font-size:0.78rem; color:var(--text-secondary); margin-top:0.15rem;">
-              Confirmá en el cartelito y en segundos tendrás la app instalada en tu teléfono, funcionando incluso en modo avión.
+              Aceptá el cartel y el acceso directo de Ritmo aparecerá junto a tus aplicaciones.
             </p>
           </div>
         </div>
       </div>
 
-      <!-- Panel Tips & Memoria Local -->
-      <div id="pwa-panel-local" hidden>
-        <div class="tutorial-step-card">
-          <div class="tutorial-step-num">💾</div>
-          <div>
-            <div style="font-weight:700; font-size:0.86rem;">¿Dónde se guardan mis hábitos?</div>
-            <p style="font-size:0.78rem; color:var(--text-secondary); margin-top:0.15rem;">
-              Todo lo que cargás se guarda automáticamente en la memoria interna de la app (<code>localStorage</code> + <code>IndexedDB</code>). Aunque cierres la app o apagues el celular, tus estadísticas siguen intactas.
-            </p>
-          </div>
-        </div>
-        <div class="tutorial-step-card">
-          <div class="tutorial-step-num">🔔</div>
-          <div>
-            <div style="font-weight:700; font-size:0.86rem;">¿Cómo funcionan los recordatorios?</div>
-            <p style="font-size:0.78rem; color:var(--text-secondary); margin-top:0.15rem;">
-              Al crear o editar un hábito podés activar una hora de alerta. En iPhone recordá primero agregar la app a Inicio (iOS 16.4+) para habilitar las notificaciones del sistema.
-            </p>
-          </div>
-        </div>
-        <div class="tutorial-step-card">
-          <div class="tutorial-step-num">💻</div>
-          <div>
-            <div style="font-weight:700; font-size:0.86rem;">¿Cómo correrla desde una compu en mi red Wi-Fi?</div>
-            <p style="font-size:0.78rem; color:var(--text-secondary); margin-top:0.15rem;">
-              Si la corrés localmente en tu PC (por ejemplo con <code>npx serve</code> o <code>python -m http.server 8080</code>), podés entrar desde el celu poniendo la IP local de tu compu o abrir el link directo en Vercel/GitHub Pages.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <button type="button" class="primary-cta-btn" data-close-modal="pwa-modal" style="margin-top:0.5rem;">
-        ¡Genial, entendido!
+      <button type="button" class="secondary-cta-btn" data-close-modal="pwa-modal" style="width:100%; margin-top:0.4rem;">
+        Cerrar
       </button>
-    </div>
-  </div>
-
-  <!-- MODAL 6: EDITAR NOMBRE DE PERFIL -->
-  <div id="name-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="name-modal-title" hidden>
-    <div class="modal-sheet">
-      <div class="modal-header">
-        <h2 id="name-modal-title" class="modal-title">¿Cómo te llamás?</h2>
-        <button type="button" class="modal-close-btn" data-close-modal="name-modal" aria-label="Cerrar edición de nombre">✕</button>
-      </div>
-      <form id="name-form">
-        <div class="form-group">
-          <label for="user-name-input" class="form-label">Tu nombre para el saludo y los reportes del Coach</label>
-          <input type="text" id="user-name-input" class="text-input" placeholder="Ej. Sofía" maxlength="28" required>
-        </div>
-        <button type="submit" class="primary-cta-btn">Guardar nombre</button>
-      </form>
     </div>
   </div>
 

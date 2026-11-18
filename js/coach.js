@@ -1,4 +1,20 @@
 const CoachEngine = {
+  getFocusLabel(focusKey) {
+    const map = {
+      bienestar: 'bienestar y salud integral',
+      energia: 'energía y movimiento físico',
+      calma: 'calma mental y descanso',
+      enfoque: 'lectura y concentración diaria'
+    };
+    return map[focusKey] || 'bienestar diario';
+  },
+
+  getGenderedAdj(gender, fem, masc, neutral) {
+    if (gender === 'masculino') return masc;
+    if (gender === 'no_binario' || gender === 'otro') return neutral;
+    return fem;
+  },
+
   getBannerSuggestion(state) {
     if (!state.habits || state.habits.length === 0) {
       return {
@@ -10,6 +26,7 @@ const CoachEngine = {
     }
 
     const global = window.StorageEngine.getGlobalStats(state);
+    const profile = state.profile || {};
     const suggestions = [];
 
     const incompleteByPrevWeek = global.habitsWithStats
@@ -35,18 +52,19 @@ const CoachEngine = {
         title: 'META CERCANA',
         text: `Te falta solo 1 registro para completar tu objetivo de hoy en "${target.habit.name}" (${target.stats.todayCount}/${target.stats.goal}).`,
         actionHabitId: target.habit.id,
-        actionLabel: `Completar ${target.habit.icon}`
+        actionLabel: `Completar ${target.habit.icon} ${target.habit.name}`
       });
     }
 
     const zeroToday = global.habitsWithStats.filter((x) => x.stats.todayCount === 0);
     if (zeroToday.length > 0) {
       const firstZero = zeroToday[0];
+      const focusLabel = this.getFocusLabel(profile.focus);
       suggestions.push({
-        title: 'PEQUEÑO PASO DE HOY',
-        text: `Hoy todavía no registraste avances en "${firstZero.habit.name}". Empezar con 5 minutos alcanza para cuidar tu constancia.`,
+        title: 'ENFOQUE PERSONALIZADO',
+        text: `Para potenciar tu enfoque en ${focusLabel}, sumá hoy tu primer paso en "${firstZero.habit.name}".`,
         actionHabitId: firstZero.habit.id,
-        actionLabel: `Sumar +1 a ${firstZero.habit.name}`
+        actionLabel: `+1 ${firstZero.habit.icon} ${firstZero.habit.name}`
       });
     }
 
@@ -62,8 +80,8 @@ const CoachEngine = {
 
     if (suggestions.length === 0) {
       return {
-        title: 'EXCELENTE JORNADA',
-        text: `¡Completaste todas tus metas de hoy (${global.totalToday} registros en total)! Descansá y celebrá tu constancia.`,
+        title: 'OBJETIVOS CUMPLIDOS',
+        text: `Completaste todas tus metas de hoy (${global.totalToday} registros en total). Descansá y celebrá tu constancia.`,
         actionHabitId: null,
         actionLabel: null
       };
@@ -74,8 +92,17 @@ const CoachEngine = {
   },
 
   generateCoachReport(state) {
-    const name = state.userName || 'Sofía';
+    const profile = state.profile || {};
+    const name = profile.name || state.userName || 'Sofía';
+    const age = profile.age ? `${profile.age} años` : '';
+    const focusLabel = this.getFocusLabel(profile.focus);
     const tone = (state.preferences && state.preferences.coachTone) || 'sweet';
+    const readyWord = this.getGenderedAdj(
+      profile.gender,
+      'enfocada',
+      'enfocado',
+      'en foco'
+    );
 
     if (!state.habits || state.habits.length === 0) {
       return {
@@ -92,9 +119,9 @@ const CoachEngine = {
     const star = global.bestHabitMonth;
     const focus = global.needsAttentionHabit;
 
-    const starName = star ? star.habit.name.toLowerCase() : 'tus hábitos';
+    const starName = star ? star.habit.name : 'tus hábitos';
     const starCount = star ? star.stats.monthCount : 0;
-    const focusName = focus ? focus.habit.name.toLowerCase() : 'tu próximo objetivo';
+    const focusName = focus ? focus.habit.name : 'tu próximo objetivo';
     const focusRemaining = focus
       ? Math.max(1, focus.stats.goal - focus.stats.todayCount)
       : 1;
@@ -104,22 +131,22 @@ const CoachEngine = {
 
     if (tone === 'sweet') {
       if (global.completedHabitsToday === global.totalHabits) {
-        mainParagraph = `¡Hola ${name}! Hoy cumpliste el 100% de tus objetivos diarios con ${global.totalToday} registros. Tu constancia con "${star ? star.habit.name : ''}" brilla este mes con ${starCount} toques acumulados. ¡Seguí así, venís con un ritmo hermoso!`;
+        mainParagraph = `¡Hola ${name}! Hoy cumpliste el 100% de tus objetivos diarios con ${global.totalToday} registros, manteniéndote súper ${readyWord} en tu meta de ${focusLabel}. Tu constancia con "${starName}" se destaca este mes con ${starCount} toques acumulados. ¡Seguí así!`;
       } else {
-        mainParagraph = `¡Hola ${name}! Tu constancia con "${star ? star.habit.name : starName}" es increíble, siendo tu hábito más fuerte con ${starCount} registros este mes. Para hoy, te propongo sumar un toque en "${focus ? focus.habit.name : focusName}" ahora mismo (te faltan ${focusRemaining} para la meta) y dedicarle unos minutos antes de terminar el día. ¡Vas por excelente camino!`;
+        mainParagraph = `¡Hola ${name}! Tu constancia con "${starName}" es increíble, siendo tu hábito más fuerte con ${starCount} registros este mes. Para acompañar tu prioridad de ${focusLabel}, hoy te propongo sumar un toque en "${focusName}" ahora mismo (te faltan ${focusRemaining} para la meta). ¡Vas por excelente camino!`;
       }
-      secondaryInsight = `Tu momento de mayor energía suele ser en la ${global.timeDistributionGlobal.peakGlobal.toLowerCase()}. Aprovechá esa franja para los hábitos que más te cuestan.`;
+      secondaryInsight = `Perfil activo${age ? ` (${age})` : ''}: tu mayor energía se concentra en la ${global.timeDistributionGlobal.peakGlobal.toLowerCase()}. Aprovechá ese momento para tus hábitos principales.`;
     } else if (tone === 'direct') {
       const diffWeek = global.totalWeek - global.totalPrevWeek;
       const diffText =
         diffWeek >= 0
-          ? `${diffWeek} registros por encima de los 7 días previos`
-          : `${Math.abs(diffWeek)} registros por debajo de la semana anterior`;
-      mainParagraph = `Informe para ${name}: acumulás ${global.totalMonth} registros en los últimos 30 días y ${global.totalWeek} en la última semana (${diffText}). Tu hábito líder es "${star ? star.habit.name : starName}" (${starCount} en el mes). Prioridad inmediata: completar ${focusRemaining} pendiente(s) en "${focus ? focus.habit.name : focusName}".`;
+          ? `${diffWeek} registros por encima de la semana previa`
+          : `${Math.abs(diffWeek)} registros por debajo de la semana previa`;
+      mainParagraph = `Informe para ${name}${age ? ` (${age})` : ''}: acumulás ${global.totalMonth} registros en 30 días y ${global.totalWeek} en la última semana (${diffText}). Hábito líder: "${starName}" (${starCount} en el mes). Acción prioritaria para tu objetivo de ${focusLabel}: completar ${focusRemaining} pendiente(s) en "${focusName}".`;
       secondaryInsight = `Franja horaria dominante: ${global.timeDistributionGlobal.peakGlobal}. Programá tus recordatorios 15 minutos antes de ese bloque.`;
     } else {
-      mainParagraph = `Hola ${name}. Cada pequeño registro cuenta. Este mes acompañaste tu rutina con ${global.totalMonth} momentos conscientes, destacando "${star ? star.habit.name : starName}" (${starCount} veces). Hoy no hace falta exigirte de más: si tenés un ratito, sumá un paso suave en "${focus ? focus.habit.name : focusName}".`;
-      secondaryInsight = `Observamos que fluís mejor durante la ${global.timeDistributionGlobal.peakGlobal.toLowerCase()}. Escuchá tu propio ritmo sin presiones.`;
+      mainParagraph = `Hola ${name}. Cada pequeño registro suma en tu camino de ${focusLabel}. Este mes registraste ${global.totalMonth} momentos conscientes, destacando "${starName}" (${starCount} veces). Hoy sin presiones: cuando sientas el momento, sumá un paso suave en "${focusName}".`;
+      secondaryInsight = `Observamos que fluís con mayor naturalidad durante la ${global.timeDistributionGlobal.peakGlobal.toLowerCase()}. Respetá tu propio ritmo diario.`;
     }
 
     const metrics = [
@@ -131,10 +158,10 @@ const CoachEngine = {
       {
         label: 'Avance de hoy',
         value: `${global.completedHabitsToday} / ${global.totalHabits} metas`,
-        sub: `${global.totalToday} toques registrados hoy`
+        sub: `${global.totalToday} toques hoy`
       },
       {
-        label: 'Horario pico',
+        label: 'Horario más activo',
         value: global.timeDistributionGlobal.peakGlobal,
         sub: `${global.totalWeek} toques esta semana`
       }
@@ -154,7 +181,7 @@ const CoachEngine = {
     if (stats.totalAllTime === 0) {
       return {
         analysis: `Todavía no tenés registros en "${habit.name}". Tocá la tarjeta o el botón +1 para inaugurar tu historial y empezar a medir tu progreso.`,
-        reminderSuggestion: `Activá un recordatorio diario a las ${habit.reminder.time || '10:00'} para crear el disparador del hábito.`
+        reminderSuggestion: `Activá un recordatorio diario a las ${habit.reminder.time || '10:00'} para sostener el hábito.`
       };
     }
 
@@ -176,10 +203,11 @@ const CoachEngine = {
         : `Hoy aún está pendiente (${stats.todayCount}/${stats.goal}).`;
 
     return {
-      analysis: `${trendSentence} ${streakText} Tu franja horaria más frecuente es: ${stats.timeDistribution.peakPeriodLabel}.`,
-      reminderSuggestion: habit.reminder && habit.reminder.enabled
-        ? `Recordatorio activo programado a las ${habit.reminder.time} hs.`
-        : `Sugerencia: programá una alerta cerca de tu horario frecuente (${stats.timeDistribution.peakPeriodLabel.split(' ')[0]}) para no cortarlo.`
+      analysis: `${trendSentence} ${streakText} Tu franja más frecuente es: ${stats.timeDistribution.peakPeriodLabel}.`,
+      reminderSuggestion:
+        habit.reminder && habit.reminder.enabled
+          ? `Recordatorio activo programado a las ${habit.reminder.time} hs.`
+          : `Sugerencia: programá una alerta cerca de la ${stats.timeDistribution.peakPeriodLabel.split(' ')[0].toLowerCase()} para sostener la constancia.`
     };
   }
 };

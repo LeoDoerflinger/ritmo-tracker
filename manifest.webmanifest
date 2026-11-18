@@ -1,0 +1,47 @@
+{
+  "name": "Ritmo · Tracker de Hábitos & Coach Diario",
+  "short_name": "Ritmo",
+  "description": "Tracker diario de hábitos con clicker táctil, estética pastel personalizable, recordatorios y reportes dinámicos en memoria local.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FAF6F0",
+  "theme_color": "#FAF6F0",
+  "lang": "es-AR",
+  "categories": ["lifestyle", "health", "productivity"],
+  "icons": [
+    {
+      "src": "./assets/icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./assets/icon-512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Mis Hábitos",
+      "short_name": "Hábitos",
+      "description": "Ir directo al clicker diario de hábitos",
+      "url": "./index.html#habits"
+    },
+    {
+      "name": "Widget Celular",
+      "short_name": "Widget",
+      "description": "Abrir la vista rápida tipo widget móvil",
+      "url": "./index.html#widget"
+    },
+    {
+      "name": "Informe del Coach",
+      "short_name": "Coach",
+      "description": "Ver análisis dinámico de rendimiento",
+      "url": "./index.html#coach"
+    }
+  ]
+}
